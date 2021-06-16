@@ -592,13 +592,15 @@ $(document).ready(function () {
           var name = $this.attr("name");
           $this.val(orderData[name]);
         });
-      
+        
+        $('#updateOrderContainer .orderDetails').html('');
         $(orderData.orderDetails).each(function(){
-          //console.log(this)
+          var eachRow = '<fieldset class="row orderInfo"><div class="mb-3 col-1"><label class="form-label">S.No</label><input name="sno" type="text" class="form-control" value="'+this.sno+'" readonly></div><div class="mb-3 col-2"><label class="form-label">Item Code</label><input name="iname" type="text" class="form-control" value="'+this.iname+'"></div><div class="mb-3 col-2"><label class="form-label">Item Price</label><input name="iprice" type="text" class="form-control" value="'+this.iprice+'"></div><div class="mb-3 col-1"><label class="form-label">Qty</label><input name="iqty" type="text" class="form-control" value="'+this.iqty+'"></div><div class="mb-3 col-2"><label class="form-label">Total Price</label><input name="itprice" type="text" class="form-control" value="'+this.itprice+'"></div><div class="mb-3 col-4"><br><button class="addItem mt-3">Add Item</button><button class="deleteItem mt-3">Delete Item</button></div></fieldset>';
+          $('#updateOrderContainer .orderDetails').append(eachRow);
         });
 
         // checkRows('updateOrder');
-      $loading.hide();
+        $loading.hide();
     });
   }
 
@@ -628,13 +630,29 @@ $(document).ready(function () {
     var orderId = $(this).attr("data-order-id");
 
     // $(this).find("[name=time]").text(moment().format("DD-MM-YYYY"));
-    $(this)
+    // $(this)
+    //   .find(":input")
+    //   .not("button")
+    //   .each(function () {
+    //     fields[this.name] = $(this).val();
+    //   });
+
+      $(this).not('.orderDetails')
       .find(":input")
       .not("button")
       .each(function () {
-        fields[this.name] = $(this).val();
+        fields[this.name] = $(this).val().trim();
       });
-
+      fields.orderDetails = [];
+      $(this).find('.orderDetails .orderInfo').each(function(){
+        var orderDetails = {};
+        $(this).find(":input")
+        .not("button").each(function(){
+          orderDetails[this.name] = $(this).val().trim();
+        });
+        fields.orderDetails.push(orderDetails);
+      });
+      //update here
     var obj = { fields: fields };
     if (obj.fields.ref == "") {
       obj.fields.ref = obj.fields.mobile.slice(-5);
@@ -653,6 +671,8 @@ $(document).ready(function () {
 
     orderRef.update(obj).then(function () {
       $(".modal").find(".btn-close").click();
+      $('#updateOrder .orderDetails').find('.orderInfo').not(':first').remove();
+      checkRows('updateOrder');
       refreshOrders();
     });
   });

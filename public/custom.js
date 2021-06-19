@@ -222,33 +222,54 @@ function trackingDCallback(data, OrderDetails) {
 }
 
 //Click on Order tab
-$("#orders-tab").click(function () {
-  refreshOrders();
+$(".fetch-orders").click(function (e) {
+  var id = $(e.target).attr('id');
+  refreshOrders(id);
 });
 
-//Refresh Orders
-function refreshOrders() {
-  if ($.fn.DataTable.isDataTable("#example")) {
-    $("#example").dataTable().fnDestroy();
-    fetchOrders("example");
+//Refresh ACC Orders
+function refreshOrders(id) {
+  if ($.fn.DataTable.isDataTable("#"+id)) {
+    $("#"+id).dataTable().fnDestroy();
   }
+  fetchOrders(id);
 }
 
-//Refresh Old Orders
-function refreshOldOrders() {
-  if ($.fn.DataTable.isDataTable("#oldOrdersexample")) {
-    $("#oldOrdersexample").dataTable().fnDestroy();
-    fetchOrders("oldOrdersexample");
+//Refresh Bill Orders
+// function refreshBillOrders() {
+//   if ($.fn.DataTable.isDataTable("#example2")) {
+//     $("#example2").dataTable().fnDestroy();
+//     fetchOrders("example2");
+//   }
+// }
+
+//Apply filters based on tabs
+function applyFilter(name, data) {
+  var ordersData = data;
+  var divName = name;
+  var filteredData;
+  if(divName == 'example1') {
+    filteredData = ordersData.filter(function (order) {
+      return !order.isDispatched && !order.isPaymentApproved && !order.isBillingApproved;
+    });
+  } else if(divName == 'example2') {
+    filteredData = ordersData.filter(function (order) {
+      return !order.isDispatched && order.isPaymentApproved && !order.isBillingApproved;
+    });
+  } else if(divName == 'example3') {
+    filteredData = ordersData.filter(function (order) {
+      return order.isPaymentApproved && order.isBillingApproved;
+    });
+  } else {
+    filteredData = ordersData;
   }
+  return filteredData;
 }
 
 //Fetch Orders
 function fetchOrders(div) {
   $loading.show();
   var orderRef = `/oms/clients/${clientRef}/orders`;
-  if(div == 'oldOrdersexample') {
-    orderRef = `/oms/clients/${clientRef}/oldOrders`;
-  }
   firebase
     .app()
     .database()
@@ -257,7 +278,6 @@ function fetchOrders(div) {
     .then((snapshot) => {
       ordersData = snapshot.val();
       renderOrders(div, ordersData, true);
-      $loading.hide();
     });
 }
 // var currentTable;
@@ -274,19 +294,27 @@ function renderOrders(div, data, isParse) {
     parseData = data;
   }
 
-  // currentTable =
-  $("#" + div).DataTable({
-    data: parseData,
+  var tableCon = $("#" + div).attr('data-bs-target');
+  var tableDiv = $(tableCon).find('table');
+
+  var filterData = applyFilter(tableDiv.attr('id'), parseData);
+
+  if ($.fn.DataTable.isDataTable(tableDiv)) {
+    $(tableDiv).dataTable().fnDestroy();
+  }
+
+  tableDiv.DataTable({
+    data: filterData,
     order: [[1, "desc"]],
     "lengthMenu": [[25, 50, -1], [25, 50, "All"]],
-    createdRow: function (row, parseData, dataIndex) {
+    createdRow: function (row, filterData, dataIndex) {
       $(row).attr({
-        "data-bs-id": parseData.key,
+        "data-bs-id": filterData.key,
         //"data-bs-toggle": "modal",
         "data-bs-target": "#editModal",
       });
       // console.log(parseData);
-      if (parseData.isDispatched) {
+      if (filterData.isDispatched) {
         $(row).addClass("orderDispatched");
       }
     },
@@ -361,14 +389,16 @@ function renderOrders(div, data, isParse) {
       },
     ],
   });
+  $loading.hide();
 }
 
 function initForm() {
-  console.log("init form");
+  // console.log("init form");
   $("[name=vendor]").trigger("change");
   $("#createOrder").find(".success").text("").removeClass("sucess");
 }
 
+//Login Check
 function customSiginin(email, password) {
   firebase
     .auth()
@@ -383,6 +413,7 @@ function customSiginin(email, password) {
     });
 }
 
+//Auth Check
 function authCheck() {
   firebase.auth().onAuthStateChanged(function (user) {
     if (user) {
@@ -409,7 +440,7 @@ var $loading;
 $(document).ready(function () {
   authCheck();
   $loading = $(".loading");
-  fetchOrders("example");
+  // fetchOrders("example1");
   fetchProfile();
 
   $("body").on("submit", "#createOrder", function (event) {
@@ -476,7 +507,7 @@ $(document).ready(function () {
     checkRows(formId);
   });
 
-  $("#myOrders").on("click", ".updateTracking", function (e) {
+  $("#accOrders").on("click", ".updateTracking", function (e) {
     e.preventDefault();
     var rowId = $(this).closest("tr").attr("id");
     var trackValue = $(this).closest("td").find("[name=tracking]").val();
@@ -493,14 +524,16 @@ $(document).ready(function () {
       });
   });
 
-  $("#old-orders-tab").on("click", function (e) {
-    e.preventDefault();
-    if ($.fn.DataTable.isDataTable("#oldOrdersexample")) {
-      $("#oldOrdersexample").dataTable().fnDestroy();
-    }
-    fetchOrders("oldOrdersexample");
-  });
+  //Edit this
+  // $("#old-orders-tab").on("click", function (e) {
+  //   e.preventDefault();
+  //   if ($.fn.DataTable.isDataTable("#oldOrdersexample")) {
+  //     $("#oldOrdersexample").dataTable().fnDestroy();
+  //   }
+  //   fetchOrders("oldOrdersexample");
+  // });
 
+  //Edit Tracking
   $("#myOrders").on("click", ".editTracking", function (e) {
     e.preventDefault();
     var rowId = $(this).closest("tr").attr("id");
@@ -511,6 +544,7 @@ $(document).ready(function () {
     $btnEle.addClass("updateTracking").removeClass("editTracking").text("Save");
   });
 
+  //Save PDF Btn
   $("body").on("click", "#saveBtn", function (e) {
     e.preventDefault();
     var element = document.getElementById("element-to-print");
@@ -521,6 +555,7 @@ $(document).ready(function () {
     html2pdf().set(opt).from(element).save();
   });
 
+  //Print PDF Btn
   $("body").on("click", "#printBtn", function (e) {
     e.preventDefault();
     var element = document.getElementById("element-to-print");
@@ -539,6 +574,7 @@ $(document).ready(function () {
       });
   });
 
+  //Close after Print
   $("#closePrintBtn").on("click", function (e) {
     e.preventDefault();
     $("#printBtn").addClass("hide");
@@ -553,6 +589,7 @@ $(document).ready(function () {
     initForm();
   });
 
+  //Edit Modal
   function editModalMethod(event) {
     var row = event.relatedTarget;
     var data = row["data-order-id"];
@@ -628,14 +665,6 @@ $(document).ready(function () {
     event.preventDefault();
     var fields = {};
     var orderId = $(this).attr("data-order-id");
-
-    // $(this).find("[name=time]").text(moment().format("DD-MM-YYYY"));
-    // $(this)
-    //   .find(":input")
-    //   .not("button")
-    //   .each(function () {
-    //     fields[this.name] = $(this).val();
-    //   });
 
       $(this).not('.orderDetails')
       .find(":input")
@@ -995,7 +1024,8 @@ $(document).ready(function () {
   $(".groupAction").click(function (e) {
     e.preventDefault();
     var $this = $(this);
-    var table = $("#example");
+    //TODO
+    var table = $this.closest('.tab-pane').find('table');
     var rows = table.find("tbody tr");
     var selectedRows = [];
     rows.each(function () {
@@ -1007,60 +1037,35 @@ $(document).ready(function () {
       }
     });
     $(e.target).attr("disabled", "disabled");
-    if ($this.hasClass("dispatched")) {
-      markAsDispatched(selectedRows, e);
+
+    if ($this.hasClass("markAsDispatch")) {
+      updateStatus(selectedRows, e, 'isDispatched');
     } else if ($this.hasClass("printSlip")) {
       printSlips(selectedRows, e);
     } else if ($this.hasClass("deleteOrders")) {
       deleteOrders(selectedRows, e);
-    } else if ($this.hasClass("move-to-old")) {
-      moveToOldOrders(selectedRows, e);
+    } else if ($this.hasClass("approveDispatch")) {
+      updateStatus(selectedRows, e, 'isBillingApproved');
+    } else if ($this.hasClass("approvePayment")) {
+      updateStatus(selectedRows, e, 'isPaymentApproved');
     }
   });
 
-  //Mark as dispatched
+  //Delete Orders
   function deleteOrders(data, e) {
     var tableId = $(e.target).closest('.tab-pane').attr('id');
     $(data).each(function (index, val) {
       var orderId = val;
       var orderRef = `/oms/clients/${clientRef}/orders/${orderId}`;
-      if(tableId == 'oldOrders') {
-        orderRef = `/oms/clients/${clientRef}/oldOrders/${orderId}`;
-      }
       firebase
         .app()
         .database()
         .ref(orderRef)
         .remove();
-      // removeByAttr(arr, 'key', orderId);
     });
-    // refreshOrders();
-    if(tableId == 'oldOrders') {
-      refreshOldOrders();
-    } else {
-      refreshOrders();
-    }
-    $(e.target).removeAttr("disabled");
-  }
-
-  //Move to Old Orders
-  function moveToOldOrders(data, e) {
-    $(data).each(function (index, val) {
-      var orderId = val;
-      firebase
-        .app()
-        .database()
-        .ref(`/oms/clients/${clientRef}/orders/${orderId}`)
-        .once("value").then((snapshot) => {
-          var orderData = snapshot.val();
-          firebase
-            .app()
-            .database()
-            .ref(`/oms/clients/${clientRef}/oldOrders/${orderId}`)
-            .update(orderData);
-      });
-    });
-    deleteOrders(data, e);
+    console.log(tableId);
+    //add id
+    refreshOrders();
     $(e.target).removeAttr("disabled");
   }
 
@@ -1076,6 +1081,25 @@ $(document).ready(function () {
           isDispatched: true,
         });
     });
+    //TODO add table id
+    refreshOrders();
+    $(e.target).removeAttr("disabled");
+  }
+
+
+  //Mark as dispatched
+  function updateStatus(data, e, status) {
+    var updatedKey = {};
+    updatedKey[status] = true;
+    $(data).each(function (index, val) {
+      var orderId = val;
+      firebase
+        .app()
+        .database()
+        .ref(`/oms/clients/${clientRef}/orders/${orderId}/fields`)
+        .update(updatedKey);
+    });
+    //TODO add table id
     refreshOrders();
     $(e.target).removeAttr("disabled");
   }

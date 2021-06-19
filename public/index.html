@@ -43,7 +43,7 @@
           text-align: center;
         }
         .logo img {
-          height: 100px;
+            width: 400px;
         }
         #exportOrder {
           border: 1px solid #000;
@@ -118,7 +118,6 @@
         <br>
         <div class="logo">
             <img src="logo.png" alt="">
-            <h4>Machilipatnam</h4>
         </div>
         <br>
         <br>
@@ -133,15 +132,19 @@
         <ul class="nav nav-tabs" id="myTab" role="tablist">
             <li class="nav-item" role="presentation">
                 <button class="nav-link active" id="new-tab" data-bs-toggle="tab" data-bs-target="#newOrder"
-                    type="button" role="tab" aria-controls="home" aria-selected="true">New Order</button>
+                    type="button" role="tab" aria-controls="home" aria-selected="true">Create Order</button>
             </li>
             <li class="nav-item" role="presentation">
-                <button class="nav-link" id="orders-tab" data-bs-toggle="tab" data-bs-target="#myOrders" type="button"
-                    role="tab" aria-controls="profile" aria-selected="false">My Orders</button>
+                <button class="nav-link fetch-orders" id="orders-tab" data-bs-toggle="tab" data-bs-target="#accOrders" type="button"
+                    role="tab" aria-controls="profile" aria-selected="false">Accounts Section</button>
             </li>
             <li class="nav-item" role="presentation">
-                <button class="nav-link" id="old-orders-tab" data-bs-toggle="tab" data-bs-target="#oldOrders" type="button"
-                    role="tab" aria-controls="profile" aria-selected="false">Old Orders</button>
+                <button class="nav-link fetch-orders" id="bill-orders-tab" data-bs-toggle="tab" data-bs-target="#billOrders" type="button"
+                    role="tab" aria-controls="profile" aria-selected="false">Billing Section</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link fetch-orders" id="disp-orders-tab" data-bs-toggle="tab" data-bs-target="#dispOrders" type="button"
+                    role="tab" aria-controls="profile" aria-selected="false">Dispatch Section</button>
             </li>
             <li class="nav-item" role="presentation">
                 <button class="nav-link" id="export-tab" data-bs-toggle="tab" data-bs-target="#exportOrders" type="button"
@@ -313,21 +316,35 @@
                     </div>
                 </div>
             </div>
-            <div class="tab-pane fade" id="myOrders" role="tabpanel" aria-labelledby="profile-tab">
-                <button class="btn btn-primary mb-3 col-3 mr-3 printSlip groupAction" type="submit">Print Slips</button>
-                <button class="btn btn-primary mb-3 col-3 mr-3 dispatched groupAction" type="submit">Mark as Dispatched</button>
-                <button class="btn btn-primary mb-3 col-3 mr-3 move-to-old groupAction" type="submit">Move to Old Orders</button>
-                <button type="submit" class="btn btn-danger mb-3 col-3 mr-3 deleteOrders groupAction">Delete Orders</button>
-                <table id="example" class="table table-striped table-bordered" style="width:100%">
+            <div class="tab-pane fade" id="accOrders" role="tabpanel" aria-labelledby="profile-tab">
+                <h2>Accounts Section</h2><br>
+                <!-- <button class="btn btn-primary mb-3 col-3 mr-3 printSlip groupAction" type="submit">Print Slips</button> -->
+                <!-- <button class="btn btn-primary mb-3 col-3 mr-3 dispatched groupAction" type="submit">Mark as Dispatched</button> -->
+                <button class="btn btn-primary mb-3 col-3 mr-3 approvePayment groupAction" type="submit">Approve Payment</button>
+                <button type="submit" class="btn btn-danger mb-3 col-3 mr-3 deleteOrders groupAction">Delete Order</button>
+                <table id="example1" class="table table-striped table-bordered" style="width:100%">
 
                 </table>
                 <br><br><br>
-                <div id="bulk-to-print" class="hide"></div>
             </div>
 
-            <div class="tab-pane fade" id="oldOrders" role="tabpanel" aria-labelledby="profile-tab">
-                <!-- <button type="submit" class="btn btn-danger mb-3 col-3 mr-3 deleteOrders groupAction">Delete Orders</button> -->
-                <table id="oldOrdersexample" class="table table-striped table-bordered" style="width:100%">
+            <div class="tab-pane fade" id="billOrders" role="tabpanel" aria-labelledby="profile-tab">
+                <h2>Billing Section</h2><br>
+                <!-- <button class="btn btn-primary mb-3 col-3 mr-3 printSlip groupAction" type="submit">Print Slips</button> -->
+                <button class="btn btn-primary mb-3 col-3 mr-3 approveDispatch groupAction" type="submit">Approve to Dispatch</button>
+                <button type="submit" class="btn btn-danger mb-3 col-3 mr-3 deleteOrders groupAction">Delete Orders</button>
+                <table id="example2" class="table table-striped table-bordered" style="width:100%">
+
+                </table>
+                <br><br><br>
+            </div>
+
+            <div class="tab-pane fade" id="dispOrders" role="tabpanel" aria-labelledby="profile-tab">
+                <h2>Dispatch Section</h2><br>
+                <button class="btn btn-primary mb-3 col-3 mr-3 printSlip groupAction" type="submit">Print Slips</button>
+                <button class="btn btn-primary mb-3 col-3 mr-3 markAsDispatch groupAction" type="submit">Mark as Dispatched</button>
+                <button type="submit" class="btn btn-danger mb-3 col-3 mr-3 deleteOrders groupAction">Delete Orders</button>
+                <table id="example3" class="table table-striped table-bordered" style="width:100%">
 
                 </table>
                 <br><br><br>
@@ -335,6 +352,7 @@
             </div>
 
             <div class="tab-pane fade" id="exportOrders" role="tabpanel" aria-labelledby="export-tab">
+                <h2>Export Orders</h2><br>
                 <form action="#" id="exportOrder" class="row justify-content-center">
                     <div class="mb-3 col-7">
                         <label class="form-label">Courier Service</label>

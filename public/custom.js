@@ -196,9 +196,11 @@ function orderSumitted(data, resp) {
       trackingDCallback,
       resp._delegate._path.pieces_
     );
-  } else {
-    refreshOrders();
-  }
+  } 
+  
+  // else {
+  //   refreshOrders();
+  // }
   //_delegate._path.pieces_
 }
 
@@ -217,6 +219,7 @@ function trackingDCallback(data, OrderDetails) {
       tracking: trackValue,
     })
     .then(function () {
+      //TODO
       refreshOrders();
     });
 }
@@ -229,10 +232,18 @@ $(".fetch-orders").click(function (e) {
 
 //Refresh ACC Orders
 function refreshOrders(id) {
-  if ($.fn.DataTable.isDataTable("#"+id)) {
-    $("#"+id).dataTable().fnDestroy();
+  var tabId;
+  if($('#'+id).is('table')) {
+    var name = $('#'+id).closest('.tab-pane').attr('id');
+    tabId = $('.fetch-orders[data-bs-target="#'+name+'"]').attr('id');
+  } else {
+    tabId = id;
   }
-  fetchOrders(id);
+  console.log(tabId);
+  if ($.fn.DataTable.isDataTable("#"+tabId)) {
+    $("#"+tabId).dataTable().fnDestroy();
+  }
+  fetchOrders(tabId);
 }
 
 //Refresh Bill Orders
@@ -268,6 +279,7 @@ function applyFilter(name, data) {
 
 //Fetch Orders
 function fetchOrders(div) {
+  console.log(div);
   $loading.show();
   var orderRef = `/oms/clients/${clientRef}/orders`;
   firebase
@@ -280,6 +292,7 @@ function fetchOrders(div) {
       renderOrders(div, ordersData, true);
     });
 }
+
 // var currentTable;
 function renderOrders(div, data, isParse) {
   let parseData;
@@ -471,6 +484,18 @@ $(document).ready(function () {
     createOrder(obj);
   });
 
+  //Price auto calculation
+  $('.orderDetails').on('keyup', '.iqty, .iprice', function(e){
+    var $this = $(e.target).closest('.orderInfo');
+    var price = Number($this.find('.iprice').val());
+    var qty = Number($this.find('.iqty').val());
+    if(!$this.find('.iqty').val().length) {
+      qty = 1;
+    }
+    var totalPrice = price * qty;
+    $this.find('.itprice').val(totalPrice);
+  });
+
   $("#profileUpdate").submit(function (event) {
     event.preventDefault();
     var fields = {};
@@ -511,6 +536,7 @@ $(document).ready(function () {
     e.preventDefault();
     var rowId = $(this).closest("tr").attr("id");
     var trackValue = $(this).closest("td").find("[name=tracking]").val();
+    var tableId = $(e.target).closest('.tab-pane').attr('id');
     var orderRef = firebase
       .app()
       .database()
@@ -520,7 +546,7 @@ $(document).ready(function () {
         tracking: trackValue,
       })
       .then(function () {
-        refreshOrders();
+        refreshOrders(tableId);
       });
   });
 
@@ -632,9 +658,11 @@ $(document).ready(function () {
         
         $('#updateOrderContainer .orderDetails').html('');
         $(orderData.orderDetails).each(function(){
-          var eachRow = '<fieldset class="row orderInfo"><div class="mb-3 col-1"><label class="form-label">S.No</label><input name="sno" type="text" class="form-control" value="'+this.sno+'" readonly></div><div class="mb-3 col-2"><label class="form-label">Item Code</label><input name="iname" type="text" class="form-control" value="'+this.iname+'"></div><div class="mb-3 col-2"><label class="form-label">Item Price</label><input name="iprice" type="text" class="form-control" value="'+this.iprice+'"></div><div class="mb-3 col-1"><label class="form-label">Qty</label><input name="iqty" type="text" class="form-control" value="'+this.iqty+'"></div><div class="mb-3 col-2"><label class="form-label">Total Price</label><input name="itprice" type="text" class="form-control" value="'+this.itprice+'"></div><div class="mb-3 col-4"><br><button class="addItem mt-2 mr-2 btn btn-primary">Add Item</button><button class="deleteItem mt-2 btn btn-danger">Delete Item</button></div></fieldset>';
+          var eachRow = '<fieldset class="row orderInfo"><div class="mb-3 col-1"><label class="form-label">S.No</label><input name="sno" type="text" class="form-control" value="'+this.sno+'" readonly></div><div class="mb-3 col-2"><label class="form-label">Item Code</label><input name="iname" type="text" class="form-control" value="'+this.iname+'"></div><div class="mb-3 col-2"><label class="form-label">Item Price</label><input name="iprice" type="text" class="form-control iprice" value="'+this.iprice+'"></div><div class="mb-3 col-1"><label class="form-label">Qty</label><input name="iqty" type="text" class="form-control iqty" value="'+this.iqty+'"></div><div class="mb-3 col-2"><label class="form-label">Total Price</label><input name="itprice" type="text" class="form-control itprice" value="'+this.itprice+'"></div><div class="mb-3 col-4"><br><button class="addItem mt-2 mr-2 btn btn-primary">Add Item</button><button class="deleteItem mt-2 btn btn-danger">Delete Item</button></div></fieldset>';
           $('#updateOrderContainer .orderDetails').append(eachRow);
         });
+
+        checkRows('updateOrder');
 
         // checkRows('updateOrder');
         $loading.hide();
@@ -665,6 +693,8 @@ $(document).ready(function () {
     event.preventDefault();
     var fields = {};
     var orderId = $(this).attr("data-order-id");
+    var tableId = $(event.target).closest('.tab-pane').attr('id');
+
 
       $(this).not('.orderDetails')
       .find(":input")
@@ -702,7 +732,7 @@ $(document).ready(function () {
       $(".modal").find(".btn-close").click();
       $('#updateOrder .orderDetails').find('.orderInfo').not(':first').remove();
       checkRows('updateOrder');
-      refreshOrders();
+      refreshOrders(tableId);
     });
   });
 
@@ -1063,9 +1093,7 @@ $(document).ready(function () {
         .ref(orderRef)
         .remove();
     });
-    console.log(tableId);
-    //add id
-    refreshOrders();
+    refreshOrders(tableId);
     $(e.target).removeAttr("disabled");
   }
 
@@ -1081,8 +1109,8 @@ $(document).ready(function () {
           isDispatched: true,
         });
     });
-    //TODO add table id
-    refreshOrders();
+    var id = $(e.target).closest('.tab-pane').find('table').attr('id');
+    refreshOrders(id);
     $(e.target).removeAttr("disabled");
   }
 
@@ -1100,7 +1128,8 @@ $(document).ready(function () {
         .update(updatedKey);
     });
     //TODO add table id
-    refreshOrders();
+    var id = $(e.target).closest('.tab-pane').find('table').attr('id');
+    refreshOrders(id);
     $(e.target).removeAttr("disabled");
   }
 

@@ -164,7 +164,12 @@
                         <label class="form-label">Date</label>
                         <input name="time" type="text" class="form-control">
                     </div>
-                    
+
+                    <!-- <div class="mb-3 col-12 hide invoice">
+                        <label class="form-label">Invoice No.</label>
+                        <input name="time" type="text" class="form-control">
+                    </div>
+                     -->
                     <div class="mb-3 col-4">
                         <label class="form-label">Mobile <span class="error">*</span></label>
                         <input required name="mobile" type="text" maxlength="10" class="form-control">
@@ -281,6 +286,23 @@
                                     <br>
                                     <button class="addItem mt-2 mr-2 btn btn-primary">Add Item</button>
                                     <button class="deleteItem mt-2 btn btn-danger">Delete Item</button>
+                                </div>
+                            </fieldset>
+                        </div>
+                        <hr>
+                        <div class="paymentDetails">
+                            <h3>Payment Details</h3>
+                            <br>
+                            <fieldset class="row paymentInfo">
+                                <div class="mb-3 col-3">
+                                    <label class="form-label">Payment Mode</label>
+                                    <select name="paymentType" id="paymentType" class="form-select">
+                                        
+                                    </select>
+                                </div>
+                                <div class="mb-3 col-2">
+                                    <label class="form-label">Amount Received</label>
+                                    <input name="ramount" type="text" class="form-control">
                                 </div>
                             </fieldset>
                         </div>
@@ -406,6 +428,14 @@
                     <div class="mb-3">
                         <label class="form-label">Delhivery Pickup Locations (Seperate by ,)</label>
                         <textarea name="pickup" class="form-control" placeholder="Seperate by ,"></textarea>
+                    </div>
+                    <br>
+                    <hr>
+                    <h3>Payment Options</h3>
+                    <br>
+                    <div class="mb-3">
+                        <label class="form-label">Payment Options (Seperate by ,)</label>
+                        <textarea name="paymentType" class="form-control" placeholder="Seperate by ,"></textarea>
                     </div>
                     <br>
                     <button class="btn btn-secondary mb-3" type="reset">Reset</button>

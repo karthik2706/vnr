@@ -408,6 +408,23 @@ function renderOrders(div, data, isParse) {
   $loading.hide();
 }
 
+function calculateTotal() {
+  var $ordersPrice = $('.orderDetails').find('.itprice');
+  var price = 0;
+  var shipCharges;
+  if($('.shipprice').val().length) {
+    shipCharges = Number($('.shipprice').val());
+  } else {
+    shipCharges = 0;
+  }
+  
+  $ordersPrice.each(function(){
+    price = price+Number($(this).val());
+  });
+  $('.titprice').val(price);
+  $('.totalOvalue').val(price+shipCharges);
+}
+
 function initForm() {
   // console.log("init form");
   $("[name=vendor]").trigger("change");
@@ -502,6 +519,11 @@ $(document).ready(function () {
     }
     var totalPrice = price * qty;
     $this.find('.itprice').val(totalPrice);
+    calculateTotal();
+  });
+
+  $('.shipprice').keyup(function(){
+    calculateTotal();
   });
 
   $("#profileUpdate").submit(function (event) {
